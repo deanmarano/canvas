@@ -10,7 +10,7 @@ window.App.Views.MainView = Backbone.View.extend
     'click #restore': 'restore'
 
   updatePickerColor: (e)->
-    pixel = @canvas.getPixel(e.clientY,e.clientX)
+    pixel = @canvas.getPixel(e.pageY,e.pageX)
     @$('#picker').css('background-color', pixel.hex())
     @$('#picker').text(pixel.hex())
     @$('#picker').css('color', pixel.inverse().hex())

@@ -41,3 +41,23 @@ a {
   margin: 15px;
   line-height: 145px;
 }
+
+#histogram {
+  border: 4px solid black;
+  width: 600px;
+  height: 300px;
+  ul {
+    li {
+      float: left;
+      display: inline;
+      p.bar {
+        background-color: green;
+        font-size: 1px;
+      }
+    }
+  }
+}
+
+#templates {
+  display: none;
+}

@@ -1,5 +1,6 @@
 class window.Canvas
   constructor: ->
+    _.extend(@, Backbone.Events)
     @canvas = document.getElementById("canvas")
     @context = @canvas.getContext('2d')
 
@@ -17,17 +18,17 @@ class window.Canvas
       0, #image start y
       image.width,
       image.height,
-      0, #canvas.start x
-      0, #canvas.start y
+      0, #canvas start x
+      0, #canvas start y
       @canvas.width,
       @canvas.height)
     @originalImage = @loadImageDataFromCanvas(image.width, image.height)
     @restore()
 
   cloneImage: (sourceData)->
-    dst = @context.createImageData(sourceData.width, sourceData.height)
-    dst.data.set(sourceData.data)
-    dst
+    imageData = @context.createImageData(sourceData.width, sourceData.height)
+    imageData.data.set(sourceData.data)
+    imageData
 
   loadImageDataFromCanvas: (width, height)->
     @context.getImageData(0, 0, width, height)
@@ -86,4 +87,5 @@ class window.Canvas
     @writeImage()
 
   writeImage: ()->
+    @trigger('updated')
     @context.putImageData(@imageData, 0, 0)

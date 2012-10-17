@@ -23,7 +23,7 @@ class App.Models.Pixel
     @
 
   average: ->
-    average = (@red + @green + @blue) /3
+    average = Math.floor((@red + @green + @blue) / 3)
     @red = average
     @green = average
     @blue = average

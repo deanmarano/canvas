@@ -16,5 +16,12 @@
     %button#grayscale_luminosity Grayscale By Luminosity
     %button#restore Restore Original
     #histogram
+      %ul
+    #templates
+      #histogramBar
+        %li{:style => 'width: {{width}}px'}
+          %p.emptySpace{:style => "height: {{whitespaceHeight}}px;"}
+          %p.bar{:style => 'height: {{barHeight}}px;'}
+            {{value}}
 
     =javascript_include_tag 'app'
