@@ -1,0 +1,20 @@
+!!! 5
+%html
+  %head
+    %meta{ :charset => "utf-8" }/
+    %meta{ "http-equiv" => "X-UA-Compatible", :content => "IE=edge,chrome=1" }/
+    %title Dean's Canvas
+
+    %link{ :href => "stylesheets/site.css?v=1", :media => "all", :rel => "stylesheet" }/
+
+  %body
+    %canvas#canvas
+    #picker
+      hi
+    %button#invert Invert
+    %button#grayscale_average Grayscale By Average
+    %button#grayscale_luminosity Grayscale By Luminosity
+    %button#restore Restore Original
+    #histogram
+
+    =javascript_include_tag 'app'
