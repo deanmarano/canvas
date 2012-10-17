@@ -20,7 +20,7 @@ $side-gutter-width: $gutter-width;
 
 body {
   font-family: $font-family;
-  color: $font-color; 
+  color: $font-color;
 }
 
 a {
@@ -61,3 +61,34 @@ a {
 #templates {
   display: none;
 }
+
+.actions {
+  margin: 15px;
+  width: 200px;
+  button {
+    margin-bottom: 10px;
+    padding: 5px;
+    display: block;
+    width: 100%;
+  }
+}
+
+.pull-left {
+  float: left;
+}
+
+.data {
+  padding-left: 20px;
+}
+
+.clearfix {
+  zoom: 1;
+}
+.clearfix::before, .clearfix::after {
+  content: '';
+  display: table;
+}
+.clearfix::after {
+  clear: both;
+}
+

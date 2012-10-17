@@ -7,6 +7,7 @@ window.App.Views.MainView = Backbone.View.extend
     'click #invert': 'invert'
     'click #grayscale_average': 'grayscaleByAverage'
     'click #grayscale_luminosity': 'grayscaleByLuminosity'
+    'click #gaussian': 'gaussian'
     'click #restore': 'restore'
 
   updatePickerColor: (e)->
@@ -17,6 +18,9 @@ window.App.Views.MainView = Backbone.View.extend
 
   invert: ->
     @canvas.inverse()
+
+  gaussian: ->
+    @canvas.gaussian()
 
   grayscaleByAverage: ->
     @canvas.grayscaleByAverage()

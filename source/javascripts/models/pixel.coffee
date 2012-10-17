@@ -24,10 +24,24 @@ class App.Models.Pixel
 
   average: ->
     average = Math.floor((@red + @green + @blue) / 3)
-    @red = average
-    @green = average
-    @blue = average
+    @setAllValues(average)
     @
+
+  setAllValues: (value)->
+    @red = value
+    @green = value
+    @blue = value
+
+  gaussian: (mean, standardDeviation = .01)->
+    intensity = @red / 255
+    mean = mean / 255
+    multiplier = (1 / (Math.sqrt(2 * Math.PI) * standardDeviation))
+    exponentTop = Math.pow(intensity - mean, 2)
+    exponentBottom = 2 * Math.pow(standardDeviation, 2)
+    part = Math.pow(Math.E, -(exponentTop/exponentBottom))
+    result = multiplier * part
+    console.log(result)
+    @setAllValues(result)
 
   averageLuminosity: ->
     average = 0.21*@red + 0.71*@green + 0.07*@blue

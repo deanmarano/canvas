@@ -34,22 +34,59 @@ class window.Canvas
     @context.getImageData(0, 0, width, height)
 
   checkPixelBounds: (row, column)->
-    throw "out of row bounds (got #{row} out of #{@imageData.height})" if row >= @imageData.height
-    throw "out of column bounds (got #{column} out of #{@imageData.width})" if column >= @imageData.width
+    throw "out of row bounds (got #{row} out of #{@imageData.height})" unless 0 <= row < @imageData.height
+    throw "out of column bounds (got #{column} out of #{@imageData.width})" unless 0 <= column < @imageData.width
 
-  getPixel: (row, column)->
-    @checkPixelBounds(row, column)
+  getPixel: (row, column, raiseError = true)->
+    try
+      @checkPixelBounds(row, column)
+    catch e
+      if raiseError
+        throw e
+      else
+        return null
     data = @imageData.data
     pixelStart = @startValueForPixel(row, column)
     new App.Models.Pixel(
       data[pixelStart]
       data[pixelStart + 1]
       data[pixelStart + 2]
-      data[pixelStart+ 3]
+      data[pixelStart + 3]
       pixelStart)
 
+  get3x3Neighborhood: (centerRow, centerColumn)->
+    result = [[], [], []]
+    result[0][0] = @getPixel(centerRow-1, centerColumn-1, false)
+    result[0][1] = @getPixel(centerRow-1, centerColumn, false)
+    result[0][2] = @getPixel(centerRow-1, centerColumn+1, false)
+    result[1][0] = @getPixel(centerRow, centerColumn-1, false)
+    result[1][1] = @getPixel(centerRow, centerColumn, false)
+    result[1][2] = @getPixel(centerRow, centerColumn+1, false)
+    result[2][0] = @getPixel(centerRow+1, centerColumn-1, false)
+    result[2][1] = @getPixel(centerRow+1, centerColumn, false)
+    result[2][2] = @getPixel(centerRow+1, centerColumn+1, false)
+
+    if centerRow == 0
+      result[0][0] = result[1][0]
+      result[0][1] = result[1][1]
+      result[0][2] = result[1][1]
+    if centerRow == @imageData.height - 1
+      result[2][0] = result[1][0]
+      result[2][1] = result[1][1]
+      result[2][2] = result[1][1]
+    if centerColumn == 0
+      result[0][0] = result[0][1]
+      result[1][0] = result[1][1]
+      result[2][0] = result[2][1]
+    if centerColumn == @imageData.width - 1
+      result[0][2] = result[0][1]
+      result[1][2] = result[1][1]
+      result[2][2] = result[2][1]
+
+    result
+
   startValueForPixel: (row, column)->
-    ((row) * (@imageData.width * 4)) + ((column) * 4)
+    (row * (@imageData.width * 4)) + (column * 4)
 
   getAllPixels: ->
     pixels = []
@@ -68,6 +105,19 @@ class window.Canvas
   inverse: ->
     @eachPixel (pixel)->
       pixel.inverse()
+
+  gaussian: ->
+    for row in [0...@imageData.height]
+      for column in [0...@imageData.width]
+        neighborhood = @get3x3Neighborhood(row, column)
+        values = _.flatten(neighborhood)
+        mean = _.reduce(values, (sum, pixel)->
+          sum + pixel.red
+        , 0) / values.length
+        pixelOfInterest = neighborhood[1][1]
+        pixelOfInterest.gaussian(mean)
+        console.log row*@imageData.height + column
+    @writeImage()
 
   grayscaleByAverage: ->
     @eachPixel (pixel)->

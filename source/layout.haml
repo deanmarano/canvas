@@ -8,15 +8,20 @@
     %link{ :href => "stylesheets/site.css?v=1", :media => "all", :rel => "stylesheet" }/
 
   %body
-    %canvas#canvas
-    #picker
-      hi
-    %button#invert Invert
-    %button#grayscale_average Grayscale By Average
-    %button#grayscale_luminosity Grayscale By Luminosity
-    %button#restore Restore Original
-    #histogram
-      %ul
+    .image.pull-left
+      %canvas#canvas
+    .data.pull-left
+      #picker.pull-left
+        hi
+      .actions.pull-left
+        %button#invert Invert
+        %button#grayscale_average Grayscale By Average
+        %button#grayscale_luminosity Grayscale By Luminosity
+        %button#gaussian Gaussian
+        %button#restore Restore Original
+      .clearfix
+      #histogram
+        %ul
     #templates
       #histogramBar
         %li{:style => 'width: {{width}}px'}
