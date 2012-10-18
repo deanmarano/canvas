@@ -10,8 +10,8 @@
 
 $ ->
   window.canvas = new Canvas
-  #canvas.loadImage('images/flower.jpeg')
-  canvas.loadImage('images/kitten.png')
+  canvas.loadImage('images/flower.jpeg')
+  #canvas.loadImage('images/kitten.png')
   new App.Views.MainView
     el: $('body')
     canvas: canvas

@@ -107,6 +107,7 @@ class window.Canvas
       pixel.inverse()
 
   gaussian: ->
+    originalImage = @cloneImage(@imageData)
     for row in [0...@imageData.height]
       for column in [0...@imageData.width]
         neighborhood = @get3x3Neighborhood(row, column)
@@ -115,8 +116,9 @@ class window.Canvas
           sum + pixel.red
         , 0) / values.length
         pixelOfInterest = neighborhood[1][1]
-        pixelOfInterest.gaussian(mean)
-        console.log row*@imageData.height + column
+        pixelOfInterest.inverse()
+        #pixelOfInterest.gaussian(mean)
+        @setPixel(pixelOfInterest)
     @writeImage()
 
   grayscaleByAverage: ->
