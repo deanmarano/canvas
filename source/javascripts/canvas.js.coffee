@@ -3,6 +3,7 @@ class window.Canvas
     _.extend(@, Backbone.Events)
     @canvas = document.getElementById("canvas")
     @context = @canvas.getContext('2d')
+    @imgFunctions = new App.Lib.ImageFunctions
 
   loadImage: (imageUrl = 'images/kitten.png')->
     image = new Image()
@@ -48,67 +49,30 @@ class window.Canvas
         @setPixel(pixelOfInterest)
     @writeImage(@imageData)
 
-  blur: ->
-    newImage = @cloneImage(@imageData.imageData)
-    @imageData.eachPixel (pixel)=>
-      neighborhood = @imageData.get3x3Neighborhood(pixel.row, pixel.column)
-      pixel.average()
-      values = _.flatten(neighborhood)
-      mean = _.reduce(values, (sum, pixel)->
-        sum + pixel.red
-      , 0) / values.length
-      newValues = [[mean, mean, mean], [mean, mean, mean], [mean, mean, mean]]
-      newImage.setNeighborhood(neighborhood, newValues)
-    @writeImage(newImage)
-
-  grayscaleByAverage: (image)->
-    image.eachPixel (pixel)->
-      pixel.average()
-    image
-
   grayscaleByLuminosity: ->
-    @imageData.eachPixel (pixel)->
-      pixel.averageLuminosity()
-    @writeImage(@imageData)
+    @callAndWrite(@imgFunctions.grayscaleByLuminosity)
+
+  grayscaleByAverage: ->
+    @callAndWrite(@imgFunctions.grayscaleByAverage)
 
   inverse: ->
-    @imageData.eachPixel (pixel)->
-      pixel.inverse()
+    @callAndWrite(@imgFunctions.inverse)
+
+  callAndWrite: (func) ->
+    @imageData = func.call(@, @imageData)
     @writeImage(@imageData)
 
-  segmentImage: ()->
-    imageToRead = @grayscaleByAverage(@imageData)
+  blur: ->
+    @imageData = @imgFunctions.blur(@imageData, @cloneImage(@imageData.imageData))
+    @writeImage(@imageData)
+
+  segmentImage: ->
+    imageToRead = @imgFunctions.grayscaleByAverage(@imageData)
     imageToWrite = @cloneImage(@imageData.imageData)
 
-    horizontallySegmentedImage = @segmentLines(imageToRead, imageToWrite)
-    finalImage = @segmentVertical(imageToRead, horizontallySegmentedImage)
+    horizontallySegmentedImage = @imgFunctions.segmentHorizontal(imageToRead, imageToWrite)
+    finalImage = @imgFunctions.segmentVertical(imageToRead, horizontallySegmentedImage)
     @writeImage(finalImage)
-
-  segmentLines: (imageData, newImage)->
-    for row in [0...imageData.imageData.height]
-      minIntensity = 255
-      for column in [0...imageData.imageData.width]
-        intensity = imageData.getPixel(row, column).red
-        minIntensity = intensity if intensity < minIntensity
-      unless minIntensity < 100
-        for column in [0...imageData.imageData.width]
-          pixel = imageData.getPixel(row, column)
-          pixel.setAllValues(0)
-          newImage.setPixel(pixel)
-    newImage
-
-  segmentVertical: (imageData, newImage)->
-    for column in [0...imageData.imageData.width]
-      minIntensity = 255
-      for row in [0...imageData.imageData.height]
-        intensity = imageData.getPixel(row, column).red
-        minIntensity = intensity if intensity < minIntensity
-      unless minIntensity < 100
-        for row in [0...imageData.imageData.height]
-          pixel = imageData.getPixel(row, column)
-          pixel.setAllValues(0)
-          newImage.setPixel(pixel)
-    newImage
 
   segment: (bottom, top, newColor)->
     @imageData.eachPixel (pixel)->

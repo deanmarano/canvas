@@ -10,6 +10,7 @@ window.App.Views.MainView = Backbone.View.extend
     'click #gaussian': 'gaussian'
     'click #restore': 'restore'
     'click #blur': 'blur'
+    'click #segment': 'segment'
 
   updatePickerColor: (e)->
     pixel = @canvas.imageData.getPixel(e.pageY,e.pageX)
@@ -27,11 +28,13 @@ window.App.Views.MainView = Backbone.View.extend
     @canvas.blur()
 
   grayscaleByAverage: ->
-    image = @canvas.grayscaleByAverage(@canvas.imageData)
-    @canvas.writeImage(image)
+    @canvas.grayscaleByAverage()
 
   grayscaleByLuminosity: ->
     @canvas.grayscaleByLuminosity()
+
+  segment: ->
+    @canvas.segmentImage()
 
   restore: ->
     @canvas.restore()

@@ -5,6 +5,7 @@
 #= require 'initializer'
 #= require 'models/pixel'
 #= require 'models/imageData'
+#= require 'lib/imageFunctions'
 #= require 'canvas'
 #= require 'views/mainView'
 #= require 'views/histogramView'
