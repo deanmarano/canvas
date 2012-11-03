@@ -34,21 +34,6 @@ class window.Canvas
   loadImageDataFromCanvas: (width, height)->
     @context.getImageData(0, 0, width, height)
 
-  gaussian: ->
-    originalImage = @cloneImage(@imageData)
-    for row in [0...@imageData.height]
-      for column in [0...@imageData.width]
-        neighborhood = @get3x3Neighborhood(row, column)
-        values = _.flatten(neighborhood)
-        mean = _.reduce(values, (sum, pixel)->
-          sum + pixel.red
-        , 0) / values.length
-        pixelOfInterest = neighborhood[1][1]
-        pixelOfInterest.inverse()
-        #pixelOfInterest.gaussian(mean)
-        @setPixel(pixelOfInterest)
-    @writeImage(@imageData)
-
   grayscaleByLuminosity: ->
     @callAndWrite(@imgFunctions.grayscaleByLuminosity)
 
