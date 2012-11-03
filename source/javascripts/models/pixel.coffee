@@ -1,10 +1,12 @@
 class App.Models.Pixel
-  constructor: (red, green, blue, alpha, start)->
+  constructor: (red, green, blue, alpha, start, row, column)->
     @red = red
     @green = green
     @blue = blue
     @alpha = alpha
     @start = start
+    @row = row
+    @column = column
 
   hex: ->
     red = @valueToHex(@red)

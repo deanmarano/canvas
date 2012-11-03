@@ -4,14 +4,16 @@
 
 #= require 'initializer'
 #= require 'models/pixel'
+#= require 'models/imageData'
 #= require 'canvas'
 #= require 'views/mainView'
 #= require 'views/histogramView'
 
 $ ->
   window.canvas = new Canvas
-  canvas.loadImage('images/flower.jpeg')
+  #canvas.loadImage('images/flower.jpeg')
   #canvas.loadImage('images/kitten.png')
+  canvas.loadImage('images/scan1.jpg')
   new App.Views.MainView
     el: $('body')
     canvas: canvas

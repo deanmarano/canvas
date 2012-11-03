@@ -28,83 +28,10 @@ class window.Canvas
   cloneImage: (sourceData)->
     imageData = @context.createImageData(sourceData.width, sourceData.height)
     imageData.data.set(sourceData.data)
-    imageData
+    new App.Models.ImageData(imageData)
 
   loadImageDataFromCanvas: (width, height)->
     @context.getImageData(0, 0, width, height)
-
-  checkPixelBounds: (row, column)->
-    throw "out of row bounds (got #{row} out of #{@imageData.height})" unless 0 <= row < @imageData.height
-    throw "out of column bounds (got #{column} out of #{@imageData.width})" unless 0 <= column < @imageData.width
-
-  getPixel: (row, column, raiseError = true)->
-    try
-      @checkPixelBounds(row, column)
-    catch e
-      if raiseError
-        throw e
-      else
-        return null
-    data = @imageData.data
-    pixelStart = @startValueForPixel(row, column)
-    new App.Models.Pixel(
-      data[pixelStart]
-      data[pixelStart + 1]
-      data[pixelStart + 2]
-      data[pixelStart + 3]
-      pixelStart)
-
-  get3x3Neighborhood: (centerRow, centerColumn)->
-    result = [[], [], []]
-    result[0][0] = @getPixel(centerRow-1, centerColumn-1, false)
-    result[0][1] = @getPixel(centerRow-1, centerColumn, false)
-    result[0][2] = @getPixel(centerRow-1, centerColumn+1, false)
-    result[1][0] = @getPixel(centerRow, centerColumn-1, false)
-    result[1][1] = @getPixel(centerRow, centerColumn, false)
-    result[1][2] = @getPixel(centerRow, centerColumn+1, false)
-    result[2][0] = @getPixel(centerRow+1, centerColumn-1, false)
-    result[2][1] = @getPixel(centerRow+1, centerColumn, false)
-    result[2][2] = @getPixel(centerRow+1, centerColumn+1, false)
-
-    if centerRow == 0
-      result[0][0] = result[1][0]
-      result[0][1] = result[1][1]
-      result[0][2] = result[1][1]
-    if centerRow == @imageData.height - 1
-      result[2][0] = result[1][0]
-      result[2][1] = result[1][1]
-      result[2][2] = result[1][1]
-    if centerColumn == 0
-      result[0][0] = result[0][1]
-      result[1][0] = result[1][1]
-      result[2][0] = result[2][1]
-    if centerColumn == @imageData.width - 1
-      result[0][2] = result[0][1]
-      result[1][2] = result[1][1]
-      result[2][2] = result[2][1]
-
-    result
-
-  startValueForPixel: (row, column)->
-    (row * (@imageData.width * 4)) + (column * 4)
-
-  getAllPixels: ->
-    pixels = []
-    for row in [0...@imageData.height]
-      for column in [0...@imageData.width]
-        pixels.push(@getPixel(row, column))
-    pixels
-
-  setPixel: (pixel)->
-    data = @imageData.data
-    data[pixel.start] = pixel.red
-    data[pixel.start + 1] = pixel.green
-    data[pixel.start + 2] = pixel.blue
-    data[pixel.start + 3] = pixel.alpha
-
-  inverse: ->
-    @eachPixel (pixel)->
-      pixel.inverse()
 
   gaussian: ->
     originalImage = @cloneImage(@imageData)
@@ -119,25 +46,82 @@ class window.Canvas
         pixelOfInterest.inverse()
         #pixelOfInterest.gaussian(mean)
         @setPixel(pixelOfInterest)
-    @writeImage()
+    @writeImage(@imageData)
 
-  grayscaleByAverage: ->
-    @eachPixel (pixel)->
+  blur: ->
+    newImage = @cloneImage(@imageData.imageData)
+    @imageData.eachPixel (pixel)=>
+      neighborhood = @imageData.get3x3Neighborhood(pixel.row, pixel.column)
       pixel.average()
+      values = _.flatten(neighborhood)
+      mean = _.reduce(values, (sum, pixel)->
+        sum + pixel.red
+      , 0) / values.length
+      newValues = [[mean, mean, mean], [mean, mean, mean], [mean, mean, mean]]
+      newImage.setNeighborhood(neighborhood, newValues)
+    @writeImage(newImage)
+
+  grayscaleByAverage: (image)->
+    image.eachPixel (pixel)->
+      pixel.average()
+    image
 
   grayscaleByLuminosity: ->
-    @eachPixel (pixel)->
+    @imageData.eachPixel (pixel)->
       pixel.averageLuminosity()
+    @writeImage(@imageData)
 
-  eachPixel: (fn)->
-    for pixel in @getAllPixels()
-      @setPixel(fn.call(@, pixel))
-    @writeImage()
+  inverse: ->
+    @imageData.eachPixel (pixel)->
+      pixel.inverse()
+    @writeImage(@imageData)
+
+  segmentImage: ()->
+    imageToRead = @grayscaleByAverage(@imageData)
+    imageToWrite = @cloneImage(@imageData.imageData)
+
+    horizontallySegmentedImage = @segmentLines(imageToRead, imageToWrite)
+    finalImage = @segmentVertical(imageToRead, horizontallySegmentedImage)
+    @writeImage(finalImage)
+
+  segmentLines: (imageData, newImage)->
+    for row in [0...imageData.imageData.height]
+      minIntensity = 255
+      for column in [0...imageData.imageData.width]
+        intensity = imageData.getPixel(row, column).red
+        minIntensity = intensity if intensity < minIntensity
+      unless minIntensity < 100
+        for column in [0...imageData.imageData.width]
+          pixel = imageData.getPixel(row, column)
+          pixel.setAllValues(0)
+          newImage.setPixel(pixel)
+    newImage
+
+  segmentVertical: (imageData, newImage)->
+    for column in [0...imageData.imageData.width]
+      minIntensity = 255
+      for row in [0...imageData.imageData.height]
+        intensity = imageData.getPixel(row, column).red
+        minIntensity = intensity if intensity < minIntensity
+      unless minIntensity < 100
+        for row in [0...imageData.imageData.height]
+          pixel = imageData.getPixel(row, column)
+          pixel.setAllValues(0)
+          newImage.setPixel(pixel)
+    newImage
+
+  segment: (bottom, top, newColor)->
+    @imageData.eachPixel (pixel)->
+      if pixel? && bottom < pixel.average().red < top
+        pixel.setAllValues(newColor)
+        @imageData.setPixel(pixel)
+    @writeImage(@imageData)
+
 
   restore: ->
     @imageData = @cloneImage(@originalImage)
-    @writeImage()
+    @writeImage(@imageData)
 
-  writeImage: ()->
+  writeImage: (image)->
     @trigger('updated')
-    @context.putImageData(@imageData, 0, 0)
+    @context.putImageData(image.imageData, 0, 0)
