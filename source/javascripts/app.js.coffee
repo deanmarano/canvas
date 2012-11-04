@@ -7,6 +7,7 @@
 #= require 'models/imageData'
 #= require 'lib/imageFunctions'
 #= require 'canvas'
+#= require 'lineCanvas'
 #= require 'views/mainView'
 #= require 'views/histogramView'
 

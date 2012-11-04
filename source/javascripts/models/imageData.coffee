@@ -2,6 +2,12 @@ class App.Models.ImageData
   constructor: (imageData)->
     @imageData = imageData
 
+  width: ->
+    @imageData.width
+
+  height: ->
+    @imageData.height
+
   getAllPixels: ->
     pixels = []
     for row in [0...@imageData.height]
@@ -46,6 +52,8 @@ class App.Models.ImageData
 
   setPixel: (pixel)->
     data = @imageData.data
+    return unless pixel?
+    pixel.start = @startValueForPixel(pixel.row, pixel.column) unless pixel.start?
     data[pixel.start] = pixel.red
     data[pixel.start + 1] = pixel.green
     data[pixel.start + 2] = pixel.blue

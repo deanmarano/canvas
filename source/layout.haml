@@ -18,11 +18,15 @@
         %button#grayscale_average Grayscale By Average
         %button#grayscale_luminosity Grayscale By Luminosity
         %button#blur Smooth (3x3 Average)
+        %button#colorSegment Segment by Color
         %button#segment Segment
+        %button#showNextSegment Show Next Segment
         %button#restore Restore Original
       .clearfix
       #histogram
         %ul
+
+      %canvas#secondCanvas
     #templates
       #histogramBar
         %li{:style => 'width: {{width}}px'}
