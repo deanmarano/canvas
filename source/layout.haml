@@ -14,6 +14,10 @@
       #picker.pull-left
         hi
       .actions.pull-left
+        %select.imageSelect
+          %option{:value=> "images/scan1.jpg"} Text
+          %option{:value=> "images/kitten.png"} Cat
+          %option{:value=> "images/flower.jpeg"} Flower
         %button#invert Invert
         %button#grayscale_average Grayscale By Average
         %button#grayscale_luminosity Grayscale By Luminosity

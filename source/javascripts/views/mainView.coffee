@@ -12,6 +12,10 @@ window.App.Views.MainView = Backbone.View.extend
     'click #colorSegment': 'colorSegmentation'
     'click #segment': 'segment'
     'click #showNextSegment': 'showNextSegment'
+    'change .imageSelect' : 'changeImage'
+
+  changeImage: (e)->
+    canvas.loadImage(e.currentTarget.value)
 
   updatePickerColor: (e)->
     pixel = @canvas.imageData.getPixel(e.pageY,e.pageX)
