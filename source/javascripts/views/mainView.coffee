@@ -1,6 +1,8 @@
 window.App.Views.MainView = Backbone.View.extend
   initialize: (options)->
     @canvas = options.canvas
+    @lineCanvas = options.lineCanvas
+    @characterCanvas = options.characterCanvas
 
   events:
     'mousemove #canvas': 'updatePickerColor'
@@ -12,6 +14,8 @@ window.App.Views.MainView = Backbone.View.extend
     'click #colorSegment': 'colorSegmentation'
     'click #segment': 'segment'
     'click #showNextSegment': 'showNextSegment'
+    'click #segmentVertical': 'segmentVertical'
+    'click #showNextCharacter': 'showNextCharacter'
     'change .imageSelect' : 'changeImage'
 
   changeImage: (e)->
@@ -42,9 +46,15 @@ window.App.Views.MainView = Backbone.View.extend
     @canvas.segment(200, 255, 255)
 
   showNextSegment: ->
-    canvas2 = new window.LineCanvas
-    result = @canvas.findSegment()
-    canvas2.showImage(canvas.getSegment(result[0], result[1], result[2], result[3]))
+    lineImage = @canvas.findNextLine()
+    @lineCanvas.showImage(lineImage)
+
+  segmentVertical: ->
+    @lineCanvas.segmentVertical()
+
+  showNextCharacter: ->
+    result = @lineCanvas.findNextCharacter()
+    @characterCanvas.showImage(result)
 
   restore: ->
     @canvas.restore()

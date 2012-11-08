@@ -8,13 +8,15 @@ class App.Models.ImageData
   height: ->
     @imageData.height
 
+  data: ->
+    @imageData.data
+
   getAllPixels: ->
     pixels = []
     for row in [0...@imageData.height]
       for column in [0...@imageData.width]
         pixels.push(@getPixel(row, column))
     pixels
-
 
   eachPixel: (fn)->
     for pixel in @getAllPixels()

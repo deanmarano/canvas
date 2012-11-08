@@ -1,0 +1,110 @@
+(function() {
+
+  App.Lib.ImageFunctions = (function() {
+
+    function ImageFunctions(context) {
+      this.context = context;
+    }
+
+    ImageFunctions.prototype.inverse = function(image) {
+      image.eachPixel(function(pixel) {
+        return pixel.inverse();
+      });
+      return image;
+    };
+
+    ImageFunctions.prototype.grayscaleByAverage = function(image) {
+      image.eachPixel(function(pixel) {
+        return pixel.average();
+      });
+      return image;
+    };
+
+    ImageFunctions.prototype.grayscaleByLuminosity = function(image) {
+      image.eachPixel(function(pixel) {
+        return pixel.averageLuminosity();
+      });
+      return image;
+    };
+
+    ImageFunctions.prototype.blur = function(imageToRead, imageToWrite) {
+      var _this = this;
+      imageToRead.eachPixel(function(pixel) {
+        var mean, neighborhood, newValues, values;
+        neighborhood = imageToRead.get3x3Neighborhood(pixel.row, pixel.column);
+        pixel.average();
+        values = _.flatten(neighborhood);
+        mean = _.reduce(values, function(sum, pixel) {
+          return sum + pixel.red;
+        }, 0) / values.length;
+        newValues = [[mean, mean, mean], [mean, mean, mean], [mean, mean, mean]];
+        return imageToWrite.setNeighborhood(neighborhood, newValues);
+      });
+      return imageToWrite;
+    };
+
+    ImageFunctions.prototype.segmentHorizontal = function(imageData, newImage) {
+      var column, intensity, minIntensity, pixel, row, _i, _j, _k, _ref, _ref1, _ref2;
+      for (row = _i = 0, _ref = imageData.imageData.height; 0 <= _ref ? _i < _ref : _i > _ref; row = 0 <= _ref ? ++_i : --_i) {
+        minIntensity = 255;
+        for (column = _j = 0, _ref1 = imageData.imageData.width; 0 <= _ref1 ? _j < _ref1 : _j > _ref1; column = 0 <= _ref1 ? ++_j : --_j) {
+          intensity = imageData.getPixel(row, column).red;
+          if (intensity < minIntensity) {
+            minIntensity = intensity;
+          }
+        }
+        if (!(minIntensity < 100)) {
+          for (column = _k = 0, _ref2 = imageData.imageData.width; 0 <= _ref2 ? _k < _ref2 : _k > _ref2; column = 0 <= _ref2 ? ++_k : --_k) {
+            pixel = imageData.getPixel(row, column);
+            pixel.setAllValues(0);
+            newImage.setPixel(pixel);
+          }
+        }
+      }
+      return newImage;
+    };
+
+    ImageFunctions.prototype.segmentVertical = function(imageData, newImage) {
+      var column, intensity, minIntensity, pixel, row, _i, _j, _k, _ref, _ref1, _ref2;
+      for (column = _i = 0, _ref = imageData.imageData.width; 0 <= _ref ? _i < _ref : _i > _ref; column = 0 <= _ref ? ++_i : --_i) {
+        minIntensity = 255;
+        for (row = _j = 0, _ref1 = imageData.imageData.height; 0 <= _ref1 ? _j < _ref1 : _j > _ref1; row = 0 <= _ref1 ? ++_j : --_j) {
+          intensity = imageData.getPixel(row, column).red;
+          if (intensity < minIntensity) {
+            minIntensity = intensity;
+          }
+        }
+        if (!(minIntensity < 125)) {
+          for (row = _k = 0, _ref2 = imageData.imageData.height; 0 <= _ref2 ? _k < _ref2 : _k > _ref2; row = 0 <= _ref2 ? ++_k : --_k) {
+            pixel = imageData.getPixel(row, column);
+            pixel.setAllValues(0);
+            newImage.setPixel(pixel);
+          }
+        }
+      }
+      return newImage;
+    };
+
+    ImageFunctions.prototype.getSegment = function(originalImage, rowOffset, columnOffset, endRow, endColumn) {
+      var column, height, image, imageData, pixel, row, width, _i, _j;
+      width = endColumn - columnOffset;
+      height = endRow - rowOffset;
+      imageData = this.context.createImageData(width, height);
+      image = new App.Models.ImageData(imageData);
+      for (row = _i = 0; 0 <= height ? _i < height : _i > height; row = 0 <= height ? ++_i : --_i) {
+        for (column = _j = 0; 0 <= width ? _j < width : _j > width; column = 0 <= width ? ++_j : --_j) {
+          pixel = originalImage.getPixel(rowOffset + row, columnOffset + column);
+          pixel.start = void 0;
+          pixel.row = row;
+          pixel.column = column;
+          image.setPixel(pixel);
+        }
+      }
+      return image;
+    };
+
+    return ImageFunctions;
+
+  })();
+
+}).call(this);

@@ -1,0 +1,65 @@
+(function() {
+
+  App.Models.Pixel = (function() {
+
+    function Pixel(red, green, blue, alpha, start, row, column) {
+      this.red = red;
+      this.green = green;
+      this.blue = blue;
+      this.alpha = alpha;
+      this.start = start;
+      this.row = row;
+      this.column = column;
+    }
+
+    Pixel.prototype.hex = function() {
+      var blue, green, red;
+      red = this.valueToHex(this.red);
+      blue = this.valueToHex(this.blue);
+      green = this.valueToHex(this.green);
+      return "#" + red + green + blue;
+    };
+
+    Pixel.prototype.valueToHex = function(value) {
+      value = value.toString(16);
+      if (value.length === 1) {
+        return value = "0" + value;
+      } else {
+        return value;
+      }
+    };
+
+    Pixel.prototype.inverse = function() {
+      this.red = 255 - this.red;
+      this.green = 255 - this.green;
+      this.blue = 255 - this.blue;
+      return this;
+    };
+
+    Pixel.prototype.average = function() {
+      var average;
+      average = Math.floor((this.red + this.green + this.blue) / 3);
+      this.setAllValues(average);
+      return this;
+    };
+
+    Pixel.prototype.setAllValues = function(value) {
+      this.red = value;
+      this.green = value;
+      return this.blue = value;
+    };
+
+    Pixel.prototype.averageLuminosity = function() {
+      var average;
+      average = 0.21 * this.red + 0.71 * this.green + 0.07 * this.blue;
+      this.red = average;
+      this.green = average;
+      this.blue = average;
+      return this;
+    };
+
+    return Pixel;
+
+  })();
+
+}).call(this);

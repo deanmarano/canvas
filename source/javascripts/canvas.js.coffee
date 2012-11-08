@@ -3,7 +3,7 @@ class window.Canvas
     _.extend(@, Backbone.Events)
     @canvas = document.getElementById("canvas")
     @context = @canvas.getContext('2d')
-    @imgFunctions = new App.Lib.ImageFunctions
+    @imgFunctions = new App.Lib.ImageFunctions(@context)
 
   loadImage: (imageUrl = 'images/kitten.png')->
     image = new Image()
@@ -26,13 +26,14 @@ class window.Canvas
     @originalImage = @loadImageDataFromCanvas(image.width, image.height)
     @restore()
 
-  cloneImage: (sourceData)->
-    imageData = @context.createImageData(sourceData.width, sourceData.height)
-    imageData.data.set(sourceData.data)
+  cloneImage: (sourceImage)->
+    imageData = @context.createImageData(sourceImage.width(), sourceImage.height())
+    imageData.data.set(sourceImage.data())
     new App.Models.ImageData(imageData)
 
   loadImageDataFromCanvas: (width, height)->
-    @context.getImageData(0, 0, width, height)
+    imageData = @context.getImageData(0, 0, width, height)
+    new App.Models.ImageData(imageData)
 
   grayscaleByLuminosity: ->
     @callAndWrite(@imgFunctions.grayscaleByLuminosity)
@@ -48,15 +49,16 @@ class window.Canvas
     @writeImage(@imageData)
 
   blur: ->
-    @imageData = @imgFunctions.blur(@imageData, @cloneImage(@imageData.imageData))
+    @imageData = @imgFunctions.blur(@imageData, @cloneImage(@imageData))
     @writeImage(@imageData)
 
   segmentImage: ->
     imageToRead = @imgFunctions.grayscaleByAverage(@imageData)
-    imageToWrite = @cloneImage(@imageData.imageData)
+    imageToWrite = @cloneImage(@imageData)
 
-    horizontallySegmentedImage = @imgFunctions.segmentHorizontal(imageToRead, imageToWrite)
-    @imageData = @imgFunctions.segmentVertical(imageToRead, horizontallySegmentedImage)
+    @imageData = @imgFunctions.segmentHorizontal(imageToRead, imageToWrite)
+    #horizontallySegmentedImage = @imgFunctions.segmentHorizontal(imageToRead, imageToWrite)
+    #@imageData = @imgFunctions.segmentVertical(imageToRead, horizontallySegmentedImage)
     @writeImage(@imageData)
 
   segment: (bottom, top, newColor)->
@@ -75,26 +77,16 @@ class window.Canvas
     @context.putImageData(image.imageData, 0, 0)
 
   getSegment: (rowOffset, columnOffset, endRow, endColumn)->
-    width = endColumn - columnOffset
-    height = endRow - rowOffset
-    imageData = @context.createImageData(width, height)
-    image = new App.Models.ImageData(imageData)
-    for row in [0...height]
-      for column in [0...width]
-        pixel = @imageData.getPixel(rowOffset + row, columnOffset + column)
-        pixel.start = undefined
-        pixel.row = row
-        pixel.column = column
-        image.setPixel(pixel)
-    image
+    @imgFunctions.getSegment(@imageData, rowOffset, columnOffset, endRow, endColumn)
 
-  findSegment: ->
+  findNextLine: ->
+    row = @lastFoundSegment || 0
     middle = @imageData.width() / 2
-    row = 0
     while @imageData.getPixel(row, middle).red == 0
       row = row + 1
     top = row
     while @imageData.getPixel(row, middle).red != 0
       row = row + 1
     bottom = row
-    [top, 0, bottom, @imageData.width()]
+    @lastFoundSegment = bottom
+    @imgFunctions.getSegment(@imageData, top, 0, bottom, @imageData.width())
