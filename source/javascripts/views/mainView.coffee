@@ -13,6 +13,7 @@ window.App.Views.MainView = Backbone.View.extend
     'click #blur': 'blur'
     'click #colorSegment': 'colorSegmentation'
     'click #segment': 'segment'
+    'click #segmentHorizontally': 'segmentHorizontally'
     'click #showNextSegment': 'showNextSegment'
     'click #segmentVertical': 'segmentVertical'
     'click #showNextCharacter': 'showNextCharacter'
@@ -22,25 +23,41 @@ window.App.Views.MainView = Backbone.View.extend
     canvas.loadImage(e.currentTarget.value)
 
   updatePickerColor: (e)->
-    pixel = @canvas.imageData.getPixel(e.pageY,e.pageX)
+    pixel = @canvas.image.getPixel(e.pageY,e.pageX)
     @$('#picker').css('background-color', pixel.hex())
     @$('#picker').text(pixel.hex())
     @$('#picker').css('color', pixel.inverse().hex())
 
   invert: ->
-    @canvas.inverse()
+    @time 'invert', ->
+      @canvas.inverse()
+
+  time: (fnName, fn)->
+    start = new Date().getTime()
+    fn.call()
+    end = new Date().getTime()
+    time = end - start
+    console.log("Execution time of '#{fnName}': " + time)
 
   blur: ->
-    @canvas.blur()
+    @time 'blur', ->
+      @canvas.blur()
 
   grayscaleByAverage: ->
-    @canvas.grayscaleByAverage()
+    @time 'grayscaleByAverage', ->
+      @canvas.grayscaleByAverage()
 
   grayscaleByLuminosity: ->
-    @canvas.grayscaleByLuminosity()
+    @time 'grayscaleByLuminosity', ->
+      @canvas.grayscaleByLuminosity()
 
   segment: ->
-    @canvas.segmentImage()
+    @time 'segment', ->
+      @canvas.segmentImage()
+
+  segmentHorizontally: ->
+    @time 'segmentHorizontally', ->
+      @canvas.segmentHorizontally()
 
   colorSegmentation: ->
     @canvas.segment(200, 255, 255)
@@ -57,4 +74,5 @@ window.App.Views.MainView = Backbone.View.extend
     @characterCanvas.showImage(result)
 
   restore: ->
-    @canvas.restore()
+    @time 'restore', ->
+      @canvas.restore()

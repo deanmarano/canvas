@@ -1,6 +1,12 @@
 class App.Lib.ImageFunctions
   constructor: (context)->
     @context = context
+    _.extend(@, Colors)
+
+  cloneImage: (sourceImage)->
+    imageData = @context.createImageData(sourceImage.columns, sourceImage.rows)
+    imageData.data.set(sourceImage.data())
+    new App.Models.ImageData(imageData)
 
   inverse: (image)->
     image.eachPixel (pixel)->
@@ -17,60 +23,95 @@ class App.Lib.ImageFunctions
       pixel.averageLuminosity()
     image
 
-  blur: (imageToRead, imageToWrite)->
+  blur: (imageToRead)->
+    imageToWrite = @cloneImage(imageToRead)
     imageToRead.eachPixel (pixel)=>
       neighborhood = imageToRead.get3x3Neighborhood(pixel.row, pixel.column)
       pixel.average()
       values = _.flatten(neighborhood)
-      mean = _.reduce(values, (sum, pixel)->
-        sum + pixel.red
-      , 0) / values.length
+      #mean = _.reduce(values, (sum, pixel)->
+        #sum + pixel.red
+      #, 0) / values.length
+      mean = (values[0].red + values[1].red + values[2].red + values[3].red + values[4].red + values[5].red + values[6].red + values[7].red + values[8].red) / 9
       newValues = [[mean, mean, mean], [mean, mean, mean], [mean, mean, mean]]
       imageToWrite.setNeighborhood(neighborhood, newValues)
     imageToWrite
 
-  segmentHorizontal: (imageData, newImage)->
-    for row in [0...imageData.imageData.height]
-      minIntensity = 255
-      for column in [0...imageData.imageData.width]
+  segmentHorizontal: (imageData)->
+    newImage = @cloneImage(imageData)
+    for row in [0...imageData.rows]
+      minIntensity = @white
+      for column in [0...imageData.columns]
         intensity = imageData.getPixel(row, column).red
         minIntensity = intensity if intensity < minIntensity
       unless minIntensity < 100
-        for column in [0...imageData.imageData.width]
-          pixel = imageData.getPixel(row, column)
-          pixel.setAllValues(0)
-          newImage.setPixel(pixel)
+        @paintRowColor(newImage, row, @black)
     newImage
 
-  segmentVertical: (imageData, newImage)->
+  paintRowColor: (image, row, color)->
+    for column in [0...image.columns]
+      pixel = image.getPixel(row, column)
+      pixel.setAllValues(color)
+      image.setPixel(pixel)
+
+
+  getSegment: (originalImage, options)->
+    columns = options.endColumn - options.startColumn
+    rows = options.endRow - options.startRow
+    imageData = @context.getImageData(
+      options.startColumn,
+      options.startRow,
+      columns,
+      rows)
+    new App.Models.ImageData(imageData)
+
+  findNextHorizontalSegment: (image, lastHorizontalSegment = 0)->
+    row = lastHorizontalSegment || 0
+    middle = image.columns / 2
+    while image.getPixel(row, middle).red == @black
+      row = row + 1
+      return if row == image.rows
+    top = row
+    while image.getPixel(row, middle).red != @black
+      row = row + 1
+      return if row == image.rows
+    bottom = row
+    {
+      startRow: top
+      startColumn: 0
+      endRow: bottom
+      endColumn: image.columns
+    }
+
+  # Line Functions
+
+  segmentVertical: (imageData, newImage = null)->
+    newImage = @cloneImage(imageData) if newImage == null
     columns = []
-    for column in [0...imageData.imageData.width]
-      minIntensity = 255
-      for row in [0...imageData.imageData.height]
+    for column in [0...imageData.columns]
+      minIntensity = @white
+      for row in [0...imageData.rows]
         intensity = imageData.getPixel(row, column).red
         minIntensity = intensity if intensity < minIntensity
-      unless minIntensity < 125
+      unless minIntensity < @mid_gray
         columns.push(column)
-    ranges = @getRanges(columns)
-    edges = @getEdges(ranges)
-    spaces = @getSpaces(ranges)
-    for range in edges
+    ranges = @getRangesOfWhitespace(columns)
+    newImage = @paintRangesColor(newImage, @getEdges(ranges), @black)
+    @paintRangesColor(newImage, @getSpaces(ranges), @mid_gray)
+
+  paintRangesColor: (image, ranges, color)->
+    for range in ranges
       for column in [range[0]..range[1]]
-          for row in [0...imageData.imageData.height]
-            pixel = imageData.getPixel(row, column)
-            pixel.setAllValues(0)
-            newImage.setPixel(pixel)
+          @paintColumnColor(image, column, color)
+    image
 
-    for range in spaces
-      for column in [range[0]..range[1]]
-          for row in [0...imageData.imageData.height]
-            pixel = imageData.getPixel(row, column)
-            pixel.setAllValues(128)
-            newImage.setPixel(pixel)
+  paintColumnColor: (image, column, color)->
+    for row in [0...image.rows]
+      pixel = image.getPixel(row, column)
+      pixel.setAllValues(color)
+      image.setPixel(pixel)
 
-    newImage
-
-  getRanges: (columns)->
+  getRangesOfWhitespace: (columns)->
     start = null
     end = null
     ranges = []
@@ -95,16 +136,17 @@ class App.Lib.ImageFunctions
     _.reject ranges, (range)->
       range[2] < 7
 
-  getSegment: (originalImage, rowOffset, columnOffset, endRow, endColumn)->
-    width = endColumn - columnOffset
-    height = endRow - rowOffset
-    imageData = @context.createImageData(width, height)
-    image = new App.Models.ImageData(imageData)
-    for row in [0...height]
-      for column in [0...width]
-        pixel = originalImage.getPixel(rowOffset + row, columnOffset + column)
-        pixel.start = undefined
-        pixel.row = row
-        pixel.column = column
-        image.setPixel(pixel)
-    image
+  findNextVerticalSegment: (image, lastVerticalSegment = 0) ->
+    column = lastVerticalSegment || 0
+    while image.getPixel(0, column).red == @black || image.getPixel(0, column).red == 128
+      column = column + 1
+    left = column
+    while image.getPixel(0, column).red != @black && image.getPixel(0, column).red != 128
+      column = column + 1
+    right = column
+    {
+      startRow: 0
+      startColumn: left
+      endRow: image.rows
+      endColumn: right
+    }

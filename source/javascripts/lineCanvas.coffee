@@ -5,33 +5,21 @@ class window.LineCanvas
     @imgFunctions = new App.Lib.ImageFunctions(@context)
 
   showImage: (image)->
-    @lastFoundCharacter = 0
+    @lastFoundSegment = 0
     @image = image
-    @writeImage()
+    @writeImage(@image)
 
-  writeImage: ->
-    @canvas.width = @image.width()
-    @canvas.height = @image.height()
-    @context.putImageData(@image.imageData, 0, 0)
+  writeImage: (image)->
+    @canvas.width = image.columns
+    @canvas.height = image.rows
+    @context.putImageData(image.imageData, 0, 0)
 
   segmentVertical: ->
-    imageToWrite = @cloneImage(@image)
-
-    @image = @imgFunctions.segmentVertical(@image, imageToWrite)
-    @writeImage()
-
-  cloneImage: (sourceImage)->
-    imageData = @context.createImageData(sourceImage.width(), sourceImage.height())
-    imageData.data.set(sourceImage.data())
-    new App.Models.ImageData(imageData)
+    @image = @imgFunctions.segmentVertical(@image)
+    @writeImage(@image)
 
   findNextCharacter: ->
-    column = @lastFoundCharacter || 0
-    while @image.getPixel(0, column).red == 0
-      column = column + 1
-    left = column
-    while @image.getPixel(0, column).red != 0
-      column = column + 1
-    right = column
-    @lastFoundCharacter = right
-    @imgFunctions.getSegment(@image, 0, left, @image.height(), right)
+    nextSegment = @imgFunctions.findNextVerticalSegment(@image, @lastFoundSegment)
+    return unless nextSegment
+    @lastFoundSegment = nextSegment.endColumn
+    @imgFunctions.getSegment(@image, nextSegment)

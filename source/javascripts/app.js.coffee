@@ -3,6 +3,7 @@
 #= require 'backbone'
 
 #= require 'initializer'
+#= require 'colors'
 #= require 'models/pixel'
 #= require 'models/imageData'
 #= require 'lib/imageFunctions'

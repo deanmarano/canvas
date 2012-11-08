@@ -9,17 +9,12 @@ class window.CharacterCanvas
     @writeImage()
 
   writeImage: ->
-    @canvas.width = @image.width()
-    @canvas.height = @image.height()
+    @canvas.width = @image.columns
+    @canvas.height = @image.rows
     @context.putImageData(@image.imageData, 0, 0)
 
   segmentVertical: ->
-    imageToWrite = @cloneImage(@image)
+    imageToWrite = @imgFunctions.cloneImage(@image)
 
     @image = @imgFunctions.segmentVertical(@image, imageToWrite)
     @writeImage()
-
-  cloneImage: (sourceImage)->
-    imageData = @context.createImageData(sourceImage.width(), sourceImage.height())
-    imageData.data.set(sourceImage.data())
-    new App.Models.ImageData(imageData)

@@ -1,6 +1,7 @@
 class window.Canvas
   constructor: ->
     _.extend(@, Backbone.Events)
+    _.extend(@, Colors)
     @canvas = document.getElementById("canvas")
     @context = @canvas.getContext('2d')
     @imgFunctions = new App.Lib.ImageFunctions(@context)
@@ -26,13 +27,8 @@ class window.Canvas
     @originalImage = @loadImageDataFromCanvas(image.width, image.height)
     @restore()
 
-  cloneImage: (sourceImage)->
-    imageData = @context.createImageData(sourceImage.width(), sourceImage.height())
-    imageData.data.set(sourceImage.data())
-    new App.Models.ImageData(imageData)
-
-  loadImageDataFromCanvas: (width, height)->
-    imageData = @context.getImageData(0, 0, width, height)
+  loadImageDataFromCanvas: (columns, rows)->
+    imageData = @context.getImageData(0, 0, columns, rows)
     new App.Models.ImageData(imageData)
 
   grayscaleByLuminosity: ->
@@ -44,49 +40,55 @@ class window.Canvas
   inverse: ->
     @callAndWrite(@imgFunctions.inverse)
 
-  callAndWrite: (func) ->
-    @imageData = func.call(@, @imageData)
-    @writeImage(@imageData)
-
   blur: ->
-    @imageData = @imgFunctions.blur(@imageData, @cloneImage(@imageData))
-    @writeImage(@imageData)
+    @callAndWrite(@imgFunctions.blur)
 
   segmentImage: ->
-    imageToRead = @imgFunctions.grayscaleByAverage(@imageData)
-    imageToWrite = @cloneImage(@imageData)
+    image = @imgFunctions.grayscaleByAverage(@image)
+    image = @imgFunctions.segmentHorizontal(image)
 
-    @imageData = @imgFunctions.segmentHorizontal(imageToRead, imageToWrite)
-    #horizontallySegmentedImage = @imgFunctions.segmentHorizontal(imageToRead, imageToWrite)
-    #@imageData = @imgFunctions.segmentVertical(imageToRead, horizontallySegmentedImage)
-    @writeImage(@imageData)
+    @image = image
+    @writeImage(@image)
+    @lastFoundSegment = 0
+    while @findNextLine()
+      true
+    @lastFoundSegment = 0
+    @image = @loadImageDataFromCanvas(@image.columns, @image.rows)
+
+
+  segmentHorizontally: ->
+    @callAndWrite(@imgFunctions.segmentHorizontal)
+
+  callAndWrite: (func) ->
+    @image = func.call(@imgFunctions, @image)
+    @writeImage(@image)
 
   segment: (bottom, top, newColor)->
-    @imageData.eachPixel (pixel)=>
+    @image.eachPixel (pixel)=>
       if bottom < pixel.average().red < top
         pixel.setAllValues(newColor)
-        @imageData.setPixel(pixel)
-    @writeImage(@imageData)
+        @image.setPixel(pixel)
+    @writeImage(@image)
 
   restore: ->
-    @imageData = @cloneImage(@originalImage)
-    @writeImage(@imageData)
+    @showImage(@imgFunctions.cloneImage(@originalImage))
+
+  showImage: (image)->
+    @lastFoundSegment = 0
+    @image = image
+    @writeImage(@image)
 
   writeImage: (image)->
     @trigger('updated')
+    @canvas.width = image.columns
+    @canvas.height = image.rows
     @context.putImageData(image.imageData, 0, 0)
 
-  getSegment: (rowOffset, columnOffset, endRow, endColumn)->
-    @imgFunctions.getSegment(@imageData, rowOffset, columnOffset, endRow, endColumn)
-
   findNextLine: ->
-    row = @lastFoundSegment || 0
-    middle = @imageData.width() / 2
-    while @imageData.getPixel(row, middle).red == 0
-      row = row + 1
-    top = row
-    while @imageData.getPixel(row, middle).red != 0
-      row = row + 1
-    bottom = row
-    @lastFoundSegment = bottom
-    @imgFunctions.getSegment(@imageData, top, 0, bottom, @imageData.width())
+    nextSegment = @imgFunctions.findNextHorizontalSegment(@image, @lastFoundSegment)
+    return unless nextSegment
+    @lastFoundSegment = nextSegment.endRow
+    segment = @imgFunctions.getSegment(@image, nextSegment)
+    image = @imgFunctions.segmentVertical(segment)
+    @context.putImageData(image.imageData, 0, nextSegment.startRow)
+    segment

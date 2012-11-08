@@ -20,7 +20,7 @@ window.App.Views.HistogramView = Backbone.View.extend
     @$('ul').replaceWith($ul)
 
   showHist: ->
-    result = _.countBy @canvas.imageData.getAllPixels(), (pixel)->
+    result = _.countBy @canvas.image.getAllPixels(), (pixel)->
       pixel.average().red
     arrayResult = _.map [0..255], (index)->
       result[index] || 0

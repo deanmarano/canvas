@@ -1,20 +1,16 @@
 class App.Models.ImageData
   constructor: (imageData)->
     @imageData = imageData
-
-  width: ->
-    @imageData.width
-
-  height: ->
-    @imageData.height
+    @columns = imageData.width
+    @rows = imageData.height
 
   data: ->
     @imageData.data
 
   getAllPixels: ->
     pixels = []
-    for row in [0...@imageData.height]
-      for column in [0...@imageData.width]
+    for row in [0...@rows]
+      for column in [0...@columns]
         pixels.push(@getPixel(row, column))
     pixels
 
@@ -31,8 +27,25 @@ class App.Models.ImageData
       else
         row = 0 if row < 0
         column = 0 if column < 0
-        row = @imageData.height if row > @imageData.height
-        column = @imageData.width if column > @imageData.width
+        row = @rows if row > @rows
+        column = @columns if column > @columns
+    data = @imageData.data
+    pixelStart = @startValueForPixel(row, column)
+    new App.Models.Pixel(
+      data[pixelStart]
+      data[pixelStart + 1]
+      data[pixelStart + 2]
+      data[pixelStart + 3]
+      pixelStart
+      row
+      column
+    )
+
+  getPaddedPixel: (row, column)->
+    row = 0 if row < 0
+    column = 0 if column < 0
+    row = @rows if row > @rows
+    column = @columns if column > @columns
     data = @imageData.data
     pixelStart = @startValueForPixel(row, column)
     new App.Models.Pixel(
@@ -46,8 +59,8 @@ class App.Models.ImageData
     )
 
   checkPixelBounds: (row, column)->
-    throw "out of row bounds (got #{row} out of #{@imageData.height})" unless 0 <= row < @imageData.height
-    throw "out of column bounds (got #{column} out of #{@imageData.width})" unless 0 <= column < @imageData.width
+    throw "out of row bounds (got #{row} out of #{@rows})" unless 0 <= row < @rows
+    throw "out of column bounds (got #{column} out of #{@columns})" unless 0 <= column < @columns
 
   startValueForPixel: (row, column)->
     (row * (@imageData.width * 4)) + (column * 4)
@@ -63,15 +76,15 @@ class App.Models.ImageData
 
   get3x3Neighborhood: (centerRow, centerColumn, size = 3)->
     result = @createSquareMatrix(size)
-    result[0][0] = @getPixel(centerRow-1, centerColumn-1, false)
-    result[0][1] = @getPixel(centerRow-1, centerColumn, false)
-    result[0][2] = @getPixel(centerRow-1, centerColumn+1, false)
-    result[1][0] = @getPixel(centerRow, centerColumn-1, false)
-    result[1][1] = @getPixel(centerRow, centerColumn, false)
-    result[1][2] = @getPixel(centerRow, centerColumn+1, false)
-    result[2][0] = @getPixel(centerRow+1, centerColumn-1, false)
-    result[2][1] = @getPixel(centerRow+1, centerColumn, false)
-    result[2][2] = @getPixel(centerRow+1, centerColumn+1, false)
+    result[0][0] = @getPaddedPixel(centerRow-1, centerColumn-1)
+    result[0][1] = @getPaddedPixel(centerRow-1, centerColumn)
+    result[0][2] = @getPaddedPixel(centerRow-1, centerColumn+1)
+    result[1][0] = @getPaddedPixel(centerRow, centerColumn-1)
+    result[1][1] = @getPaddedPixel(centerRow, centerColumn)
+    result[1][2] = @getPaddedPixel(centerRow, centerColumn+1)
+    result[2][0] = @getPaddedPixel(centerRow+1, centerColumn-1)
+    result[2][1] = @getPaddedPixel(centerRow+1, centerColumn)
+    result[2][2] = @getPaddedPixel(centerRow+1, centerColumn+1)
     result
 
   createSquareMatrix: (size)->
