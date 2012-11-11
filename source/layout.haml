@@ -27,22 +27,39 @@
         %button#showNextSegment Show Next Segment
         %button#segment DO IT ALL!
         %button#restore Restore Original
+        %button#showWaveforms Show Character Waveforms
       .clearfix
-      #histogram
+      #histogram.histogram
         %ul
 
       %canvas#lineCanvas
       %br
       %button#segmentVertical Segment Vertically
-      %button#showNextCharacter Show Next Character
+      %button#showNextCharacter Show Next Word
       %br
       %canvas#characterCanvas
+      %table#characterTable
+        %tbody
       .clearfix
     #templates
+      #characterSample
+        %table
+          %tbody
+            %tr
+              %td.characterValue
+                {{value}}
+              %td.character
+                {{character}}
+              %td.drawnCharacter
+                %canvas
+              %td.verticalHistogram.histogram{:width => '150px', :height => '150px'}
+                %ul
+              %td.horizontalHistogram.histogram{:width => '150px', :height => '150px'}
+                %ul
       #histogramBar
         %li{:style => 'width: {{width}}px'}
           %p.emptySpace{:style => "height: {{whitespaceHeight}}px;"}
           %p.bar{:style => 'height: {{barHeight}}px;'}
             {{value}}
 
-    =javascript_include_tag 'app'
+    = (javascript_include_tag 'app').gsub('src="/', 'src="')

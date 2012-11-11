@@ -2,7 +2,7 @@ class window.CharacterCanvas
   constructor: ->
     @canvas = document.getElementById("characterCanvas")
     @context = @canvas.getContext('2d')
-    @imgFunctions = new App.Lib.ImageFunctions
+    @imgFunctions = new App.Lib.ImageFunctions(@context)
 
   showImage: (image)->
     @image = image

@@ -3,6 +3,7 @@ window.App.Views.MainView = Backbone.View.extend
     @canvas = options.canvas
     @lineCanvas = options.lineCanvas
     @characterCanvas = options.characterCanvas
+    @waveformView = options.waveformView
 
   events:
     'mousemove #canvas': 'updatePickerColor'
@@ -17,6 +18,7 @@ window.App.Views.MainView = Backbone.View.extend
     'click #showNextSegment': 'showNextSegment'
     'click #segmentVertical': 'segmentVertical'
     'click #showNextCharacter': 'showNextCharacter'
+    'click #showWaveforms': 'showWaveforms'
     'change .imageSelect' : 'changeImage'
 
   changeImage: (e)->
@@ -72,6 +74,11 @@ window.App.Views.MainView = Backbone.View.extend
   showNextCharacter: ->
     result = @lineCanvas.findNextCharacter()
     @characterCanvas.showImage(result)
+
+  showWaveforms: ->
+    @time 'waveformRender', =>
+      @waveformView.render()
+
 
   restore: ->
     @time 'restore', ->

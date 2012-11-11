@@ -29,23 +29,58 @@ class App.Lib.ImageFunctions
       neighborhood = imageToRead.get3x3Neighborhood(pixel.row, pixel.column)
       pixel.average()
       values = _.flatten(neighborhood)
-      #mean = _.reduce(values, (sum, pixel)->
-        #sum + pixel.red
-      #, 0) / values.length
       mean = (values[0].red + values[1].red + values[2].red + values[3].red + values[4].red + values[5].red + values[6].red + values[7].red + values[8].red) / 9
       newValues = [[mean, mean, mean], [mean, mean, mean], [mean, mean, mean]]
       imageToWrite.setNeighborhood(neighborhood, newValues)
     imageToWrite
 
-  segmentHorizontal: (imageData)->
-    newImage = @cloneImage(imageData)
-    for row in [0...imageData.rows]
+  segmentHorizontal: (image)->
+    newImage = @cloneImage(image)
+    paintPreviousRow = false
+    inNonPaintArea = false
+    for row in [0...image.rows]
       minIntensity = @white
-      for column in [0...imageData.columns]
+      for column in [0...image.columns]
+        intensity = image.getPixel(row, column).red
+        minIntensity = intensity if intensity < minIntensity
+      if minIntensity > 100
+        if paintPreviousRow
+          @paintRowColor(newImage, row - 1, @black) if !inNonPaintArea
+          inNonPaintArea = false
+        paintPreviousRow = true
+      else
+        inNonPaintArea = true
+        paintPreviousRow = false
+    newImage
+
+  basicSegmentVertical: (image, newImage = null)->
+    newImage = @cloneImage(image) if newImage == null
+    paintPreviousColumn = false
+    inNonPaintArea = false
+    for column in [0...image.columns]
+      minIntensity = @white
+      for row in [0...image.rows]
+        intensity = image.getPixel(row, column).red
+        minIntensity = intensity if intensity < minIntensity
+      if minIntensity > 100
+        if paintPreviousColumn
+          @paintColumnColor(newImage, column - 1, @black) if !inNonPaintArea
+          inNonPaintArea = false
+        paintPreviousColumn = true
+      else
+        inNonPaintArea = true
+        paintPreviousColumn = false
+    newImage
+
+  basicSegmentVertical2: (imageData, newImage = null)->
+    newImage = @cloneImage(imageData) if newImage == null
+    for column in [0...imageData.columns]
+      minIntensity = @white
+      for row in [0...imageData.rows]
         intensity = imageData.getPixel(row, column).red
         minIntensity = intensity if intensity < minIntensity
       unless minIntensity < 100
-        @paintRowColor(newImage, row, @black)
+        @paintColumnColor(newImage, column, @black)
     newImage
 
   paintRowColor: (image, row, color)->

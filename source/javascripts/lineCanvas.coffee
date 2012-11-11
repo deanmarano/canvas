@@ -15,7 +15,7 @@ class window.LineCanvas
     @context.putImageData(image.imageData, 0, 0)
 
   segmentVertical: ->
-    @image = @imgFunctions.segmentVertical(@image)
+    @image = @imgFunctions.basicSegmentVertical(@image)
     @writeImage(@image)
 
   findNextCharacter: ->
