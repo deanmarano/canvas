@@ -5,6 +5,7 @@ window.App.Views.WaveformView = Backbone.View.extend
     'click #segmentCharacter': 'segment'
     'click #trimHorizontal': 'trimHorizontal'
     'click #trimVertical': 'trimVertical'
+    'click #doItAll': 'doItAll'
   render: ->
     table = @$('tbody')
     @A = 65
@@ -40,6 +41,13 @@ window.App.Views.WaveformView = Backbone.View.extend
 
   trimVertical: ->
     _.each @rows, (textCanvas)->
+      textCanvas.verticalTrim()
+
+  doItAll: ->
+    _.each @rows, (textCanvas)->
+      textCanvas.drawCharacter()
+      textCanvas.segmentImage()
+      textCanvas.horizontalTrim()
       textCanvas.verticalTrim()
 
   makeRow: (table, characterValue)->

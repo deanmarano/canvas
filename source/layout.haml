@@ -42,6 +42,7 @@
         %button#segmentCharacter Segment
         %button#trimHorizontal Trim Horizontal
         %button#trimVertical Trim Vertical
+        %button#doItAll Do It All!
 
         %table#characterTable
           %tbody
@@ -56,7 +57,7 @@
               %td.character
                 {{character}}
               %td.drawnCharacter
-                %canvas
+                %canvas{:width => '150px', :height => '150px'}
               %td.verticalHistogram.histogram{:width => '150px', :height => '150px'}
               %td.horizontalHistogram.histogram{:width => '150px', :height => '150px'}
       #histogramBar

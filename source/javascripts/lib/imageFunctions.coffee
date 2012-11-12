@@ -51,6 +51,8 @@ class App.Lib.ImageFunctions
       else
         inNonPaintArea = true
         paintPreviousRow = false
+    @paintRowColor(newImage, image.rows - 1, @black) if paintPreviousRow && !inNonPaintArea
+
     newImage
 
   basicSegmentVertical: (image, newImage = null)->
@@ -70,6 +72,8 @@ class App.Lib.ImageFunctions
       else
         inNonPaintArea = true
         paintPreviousColumn = false
+    @paintColumnColor(newImage, image.columns - 1, @black) if paintPreviousColumn && !inNonPaintArea
+
     newImage
 
   basicSegmentVertical2: (imageData, newImage = null)->
