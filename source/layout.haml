@@ -30,7 +30,6 @@
         %button#showWaveforms Show Character Waveforms
       .clearfix
       #histogram.histogram
-        %ul
 
       %canvas#lineCanvas
       %br
@@ -38,9 +37,15 @@
       %button#showNextCharacter Show Next Word
       %br
       %canvas#characterCanvas
-      %table#characterTable
-        %tbody
-      .clearfix
+      #waveforms
+        %button#showCharacters Show Characters
+        %button#segmentCharacter Segment
+        %button#trimHorizontal Trim Horizontal
+        %button#trimVertical Trim Vertical
+
+        %table#characterTable
+          %tbody
+        .clearfix
     #templates
       #characterSample
         %table
@@ -53,9 +58,7 @@
               %td.drawnCharacter
                 %canvas
               %td.verticalHistogram.histogram{:width => '150px', :height => '150px'}
-                %ul
               %td.horizontalHistogram.histogram{:width => '150px', :height => '150px'}
-                %ul
       #histogramBar
         %li{:style => 'width: {{width}}px'}
           %p.emptySpace{:style => "height: {{whitespaceHeight}}px;"}

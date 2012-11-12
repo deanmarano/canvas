@@ -1,5 +1,10 @@
 window.App.Templates.CharacterRow = $('#templates #characterSample tbody').html()
 window.App.Views.WaveformView = Backbone.View.extend
+  events:
+    'click #showCharacters': 'showCharacters'
+    'click #segmentCharacter': 'segment'
+    'click #trimHorizontal': 'trimHorizontal'
+    'click #trimVertical': 'trimVertical'
   render: ->
     table = @$('tbody')
     @A = 65
@@ -13,13 +18,29 @@ window.App.Views.WaveformView = Backbone.View.extend
     @z = 122
     #for characterValue in [@A..@A]
       #makeRow(table, characterValue)
-    for characterValue in [@A..@Z]
-      @makeRow(table, characterValue)
-    for characterValue in [@a...@i]
-      @makeRow(table, characterValue)
-    for characterValue in [@m..@z]
-      @makeRow(table, characterValue)
+    badChars = [91..96]
+    badChars.push @i
+    badChars.push @j
+    badChars.push @l
+    @rows = []
+    for characterValue in [@A..@z]
+      @rows.push @makeRow(table, characterValue) unless _.include badChars, characterValue
 
+  showCharacters: ->
+    _.each @rows, (textCanvas)->
+      textCanvas.drawCharacter()
+
+  segment: ->
+    _.each @rows, (textCanvas)->
+      textCanvas.segmentImage()
+
+  trimHorizontal: ->
+    _.each @rows, (textCanvas)->
+      textCanvas.horizontalTrim()
+
+  trimVertical: ->
+    _.each @rows, (textCanvas)->
+      textCanvas.verticalTrim()
 
   makeRow: (table, characterValue)->
     character = String.fromCharCode(characterValue)
@@ -35,8 +56,9 @@ window.App.Views.WaveformView = Backbone.View.extend
     vertHist = new App.Views.HistogramView
       el: $row.find('.verticalHistogram')
       canvas: textCanvas
-    vertHist.verticalHist()
+      type: 'vertical'
     horizontalHist = new App.Views.HistogramView
       el: $row.find('.horizontalHistogram')
       canvas: textCanvas
-    horizontalHist.horizontalHist()
+      type: 'horizontal'
+    textCanvas

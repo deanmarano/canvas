@@ -65,6 +65,12 @@ a {
   display: none;
 }
 
+.drawnCharacter {
+  canvas {
+    border: 1px solid black;
+  }
+}
+
 .actions {
   margin: 15px;
   width: 200px;

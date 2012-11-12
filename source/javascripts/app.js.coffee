@@ -15,7 +15,6 @@
 #= require 'views/histogramView'
 #= require 'views/waveformView'
 
-
 $ ->
   window.canvas = new Canvas
   canvas.loadImage('images/scan1.jpg')
@@ -23,7 +22,7 @@ $ ->
   window.characterCanvas = new CharacterCanvas
     el: $('#characterCanvas')
   waveformView = new App.Views.WaveformView
-    el: $('#characterTable')
+    el: $('#waveforms')
   new App.Views.MainView
     el: $('body')
     canvas: canvas

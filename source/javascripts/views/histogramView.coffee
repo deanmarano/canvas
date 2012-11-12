@@ -3,7 +3,10 @@ window.App.Views.HistogramView = Backbone.View.extend
   initialize: (options)->
     _.extend(@, Colors)
     @canvas = options.canvas
+    @type = options.type
     @canvas.bind('updated', => @showHist())
+    @canvas.bind('vertical:updated', => @verticalHist())
+    @canvas.bind('horizontal:updated', => @horizontalHist())
 
   bars: (values)->
     max = _.max(values)
@@ -18,7 +21,7 @@ window.App.Views.HistogramView = Backbone.View.extend
         barHeight: barHeight
         whitespaceHeight: height - barHeight
       $ul.append(bar)
-    @$('ul').replaceWith($ul)
+    @$el.html($ul)
 
   showHist: ->
     result = _.countBy @canvas.image.getAllPixels(), (pixel)->
@@ -28,6 +31,7 @@ window.App.Views.HistogramView = Backbone.View.extend
     @bars(arrayResult)
 
   verticalHist: ->
+    return unless @type == 'vertical'
     imageData = @canvas.image
     values = []
     for column in [0...imageData.columns]
@@ -37,8 +41,10 @@ window.App.Views.HistogramView = Backbone.View.extend
         columnValue = columnValue + 1 if intensity < @mid_gray
       values.push columnValue
     @bars(values)
+    _.max values
 
   horizontalHist: ->
+    return unless @type == 'horizontal'
     imageData = @canvas.image
     values = []
     for row in [0...imageData.rows]
@@ -48,3 +54,5 @@ window.App.Views.HistogramView = Backbone.View.extend
         rowValue = rowValue + 1 if intensity < @mid_gray
       values.push rowValue
     @bars(values)
+    _.max values
+
