@@ -66,4 +66,19 @@
           %p.bar{:style => 'height: {{barHeight}}px;'}
             {{value}}
 
+    = (javascript_include_tag 'jquery')
+    = (javascript_include_tag 'underscore')
+    = (javascript_include_tag 'backbone')
+    = (javascript_include_tag 'initializer')
+    = (javascript_include_tag 'colors')
+    = (javascript_include_tag 'models/pixel')
+    = (javascript_include_tag 'models/imageData')
+    = (javascript_include_tag 'lib/imageFunctions')
+    = (javascript_include_tag 'canvas')
+    = (javascript_include_tag 'lineCanvas')
+    = (javascript_include_tag 'canvases/characterCanvas')
+    = (javascript_include_tag 'canvases/textCanvas')
+    = (javascript_include_tag 'views/mainView')
+    = (javascript_include_tag 'views/histogramView')
+    = (javascript_include_tag 'views/waveformView')
     = (javascript_include_tag 'app').gsub('src="/', 'src="')

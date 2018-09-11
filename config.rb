@@ -18,11 +18,11 @@ set :erb, :layout_engine => :haml
 
 # CodeRay syntax highlighting in Haml
 # First: gem install haml-coderay
- require 'haml-coderay'
+ #require 'haml-coderay'
 
 # CoffeeScript filters in Haml
 # First: gem install coffee-filter
- require 'coffee-filter'
+ #require 'coffee-filter'
 
 # Automatic image dimensions on image_tag helper
 # activate :automatic_image_sizes
@@ -65,12 +65,17 @@ set :erb, :layout_engine => :haml
 
 # Change the JS directory
 # set :js_dir, "alternative_js_directory"
+# 
+#set :css_dir, "source/stylesheets"
+#set :js_dir,  "source/javascripts"
 
 # Change the images directory
 # set :images_dir, "alternative_image_directory"
 
 # Build-specific configuration
 configure :build do
+  activate :sprockets
+
   # For example, change the Compass output style for deployment
   # activate :minify_css
   
